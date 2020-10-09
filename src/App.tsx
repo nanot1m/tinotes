@@ -2,57 +2,78 @@ import { observer } from "mobx-react-lite";
 import React, { useState } from "react";
 import { BaseElementModel, NoteModel, TextAreaElementModel } from "./core";
 import "./App.css";
-import { spawn } from "child_process";
 
-const Note = observer(
-  ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-    <div className="Note" {...props} />
-  )
-);
+const Note = observer(function Note({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className="Note" {...props} />;
+});
 
-const Wrapper = observer(({ children }) => (
-  <div className="Wrapper">{children}</div>
-));
+const Wrapper = observer(function Wrapper({ children }) {
+  return <div className="Wrapper">{children}</div>;
+});
 
-const TextArea = observer(
-  ({
-    className,
-    ...props
-  }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
-    <textarea className="TextArea" {...props} />
-  )
-);
+const TextArea = observer(function TextArea({
+  model,
+}: {
+  model: TextAreaElementModel;
+}) {
+  return (
+    <textarea
+      className="TextArea"
+      autoFocus
+      rows={4}
+      cols={20}
+      value={model.text}
+      onChange={(e) => model.setText(e.target.value)}
+    />
+  );
+});
 
 const ElementControls = observer(({ children }) => (
   <div className="ElementControls">{children}</div>
 ));
 
-const ElementWrapper = observer(
-  ({ children, x, y }: { children: React.ReactNode; x: number; y: number }) => (
+const ElementWrapper = observer(function ElementWrapper({
+  children,
+  x,
+  y,
+}: {
+  children: React.ReactNode;
+  x: number;
+  y: number;
+}) {
+  return (
     <div
       className="ElementWrapper"
       style={{ "--element-y": y, "--element-x": x } as React.CSSProperties}
     >
       {children}
     </div>
-  )
-);
+  );
+});
 
-const RoundIcon = observer(
-  ({ className, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-    <button className="RoundIcon" {...props} />
-  )
-);
+const RoundIcon = observer(function RoundIcon({
+  className,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return <button className="RoundIcon" {...props} />;
+});
 
-const ElementView = observer(({ element }: { element: BaseElementModel }) => {
+const ElementView = observer(function ElementView({
+  element,
+}: {
+  element: BaseElementModel;
+}) {
   if (element instanceof TextAreaElementModel) {
-    return <TextArea autoFocus rows={4} cols={20} />;
+    return <TextArea model={element} />;
   }
 
   return null;
 });
 
-const NoteTitle = observer(({ note }: { note: NoteModel }) => {
+const NoteTitle = observer(function NoteTitle({ note }: { note: NoteModel }) {
   const [isEditing, setIsEditing] = useState(false);
   const [newTitleName, setNewTitleName] = useState(note.title);
 
@@ -64,8 +85,10 @@ const NoteTitle = observer(({ note }: { note: NoteModel }) => {
 
   if (isEditing) {
     return (
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} onBlur={handleSubmit}>
         <input
+          autoFocus
+          className="NoteTitle__input"
           value={newTitleName}
           onChange={(e) => setNewTitleName(e.target.value)}
         />
@@ -74,11 +97,13 @@ const NoteTitle = observer(({ note }: { note: NoteModel }) => {
   }
 
   return (
-    <h2 onDoubleClick={() => setIsEditing(true)}>{note.title || "Untitled"}</h2>
+    <h2 onDoubleClick={() => setIsEditing(true)} className="NoteTitle__title">
+      {note.title || <span className="NoteTitle__comment">Untitled</span>}
+    </h2>
   );
 });
 
-const App = observer(() => {
+const App = observer(function App() {
   const [note] = useState(() => new NoteModel(""));
 
   function handleClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {

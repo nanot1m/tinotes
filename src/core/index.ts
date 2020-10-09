@@ -25,6 +25,18 @@ export abstract class BaseElementModel {
 
 export class TextAreaElementModel extends BaseElementModel {
   public type = "TextArea";
+
+  public text: string = "";
+
+  constructor({ x, y, text = "" }: { x: number; y: number; text?: string }) {
+    super({ x, y });
+    makeObservable(this, { text: observable, setText: action });
+    this.text = text;
+  }
+
+  public setText(text: string) {
+    this.text = text;
+  }
 }
 
 export class NoteModel {
