@@ -50,4 +50,8 @@ export class NoteModel {
   public removeElement(elementId: string) {
     this._elements.delete(elementId);
   }
+
+  public setTitle(title: string) {
+    this.title = title;
+  }
 }

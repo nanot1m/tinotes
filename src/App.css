@@ -9,7 +9,9 @@
 
 .Wrapper {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 2em;
+  align-items: center;
   padding-top: 4em;
   padding-bottom: 4em;
   background-color: bisque;

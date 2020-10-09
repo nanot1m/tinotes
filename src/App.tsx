@@ -2,18 +2,11 @@ import { observer } from "mobx-react-lite";
 import React, { useState } from "react";
 import { BaseElementModel, NoteModel, TextAreaElementModel } from "./core";
 import "./App.css";
+import { spawn } from "child_process";
 
 const Note = observer(
-  ({
-    children,
-    onClick,
-  }: {
-    children: React.ReactNode;
-    onClick?: React.MouseEventHandler;
-  }) => (
-    <div className="Note" onClick={onClick}>
-      {children}
-    </div>
+  ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+    <div className="Note" {...props} />
   )
 );
 
@@ -57,6 +50,32 @@ const ElementView = observer(({ element }: { element: BaseElementModel }) => {
   }
 
   return null;
+});
+
+const NoteTitle = observer(({ note }: { note: NoteModel }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [newTitleName, setNewTitleName] = useState(note.title);
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    note.setTitle(newTitleName);
+    setIsEditing(false);
+  }
+
+  if (isEditing) {
+    return (
+      <form onSubmit={handleSubmit}>
+        <input
+          value={newTitleName}
+          onChange={(e) => setNewTitleName(e.target.value)}
+        />
+      </form>
+    );
+  }
+
+  return (
+    <h2 onDoubleClick={() => setIsEditing(true)}>{note.title || "Untitled"}</h2>
+  );
 });
 
 const App = observer(() => {
@@ -117,7 +136,8 @@ const App = observer(() => {
 
   return (
     <Wrapper>
-      <Note onClick={handleClick}>
+      <NoteTitle note={note} />
+      <Note onDoubleClick={handleClick}>
         {note.elements.map((element) => (
           <ElementWrapper key={element.id} x={element.x} y={element.y}>
             <ElementControls>
