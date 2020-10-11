@@ -1,7 +1,15 @@
-import { observer } from "mobx-react-lite";
+import { observer, useObserver } from "mobx-react-lite";
 import React, { useState } from "react";
-import { BaseElementModel, NoteModel, TextAreaElementModel } from "./core";
+import {
+  BaseElementModel,
+  deserializeNoteModel,
+  NoteModel,
+  SerializedNote,
+  serializeNoteModel,
+  TextAreaElementModel,
+} from "./core";
 import "./App.css";
+import { getDragHandler } from "./getDragHandler";
 
 const Note = observer(function Note({
   className,
@@ -20,14 +28,22 @@ const TextArea = observer(function TextArea({
   model: TextAreaElementModel;
 }) {
   return (
-    <textarea
-      className="TextArea"
-      autoFocus
-      rows={4}
-      cols={20}
-      value={model.text}
-      onChange={(e) => model.setText(e.target.value)}
-    />
+    <label className="TextArea__wrapper">
+      <textarea
+        className="TextArea"
+        autoFocus
+        style={{ width: model.width, height: model.height }}
+        value={model.text}
+        onChange={(e) => model.setText(e.target.value)}
+      />
+      <button
+        className="TextArea__resize-handler"
+        onMouseDown={getDragHandler(({ dX, dY }) => {
+          model.width += dX;
+          model.height += dY;
+        })}
+      />
+    </label>
   );
 });
 
@@ -103,8 +119,21 @@ const NoteTitle = observer(function NoteTitle({ note }: { note: NoteModel }) {
   );
 });
 
+const LS_KEY = "TINOTES_NOTE";
+
 const App = observer(function App() {
-  const [note] = useState(() => new NoteModel(""));
+  const [note] = useState(() => {
+    const fromLS = localStorage.getItem(LS_KEY);
+    if (fromLS) {
+      return deserializeNoteModel(fromLS as SerializedNote);
+    }
+    return new NoteModel();
+  });
+
+  useObserver(() => {
+    const serializedNote = serializeNoteModel(note);
+    localStorage.setItem(LS_KEY, serializedNote);
+  });
 
   function handleClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     if (e.target !== e.currentTarget) {
@@ -129,34 +158,12 @@ const App = observer(function App() {
   }
 
   function getStartMovingHandler(activeElement: BaseElementModel) {
-    return (mouseDownEvent: React.MouseEvent<HTMLButtonElement>) => {
-      let currentX = mouseDownEvent.clientX;
-      let currentY = mouseDownEvent.clientY;
-
-      function moveElement(mouseMoveEvent: MouseEvent) {
-        const dX = mouseMoveEvent.clientX - currentX;
-        const dY = mouseMoveEvent.clientY - currentY;
-        currentX = mouseMoveEvent.clientX;
-        currentY = mouseMoveEvent.clientY;
-
-        activeElement.moveTo({
-          x: activeElement.x + dX,
-          y: activeElement.y + dY,
-        });
-      }
-
-      function stopMoving() {
-        document.removeEventListener("mousemove", moveElement);
-        document.removeEventListener("mouseup", stopMoving);
-        document.removeEventListener("blur", stopMoving);
-        document.removeEventListener("mouseleave", stopMoving);
-      }
-
-      document.addEventListener("mousemove", moveElement);
-      document.addEventListener("mouseup", stopMoving);
-      document.addEventListener("blur", stopMoving);
-      document.addEventListener("mouseleave", stopMoving);
-    };
+    return getDragHandler(({ dX, dY }) => {
+      activeElement.moveTo({
+        x: activeElement.x + dX,
+        y: activeElement.y + dY,
+      });
+    });
   }
 
   return (

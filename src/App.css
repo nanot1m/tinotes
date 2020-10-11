@@ -5,6 +5,8 @@
   height: 800px;
   box-shadow: 0.125em 0.125em 0 0.125em rgba(0, 0, 0, 0.1);
   position: relative;
+  flex-shrink: 0;
+  flex-grow: 0;
 }
 
 .Wrapper {
@@ -12,18 +14,40 @@
   flex-direction: column;
   gap: 2em;
   align-items: center;
-  padding-top: 4em;
-  padding-bottom: 4em;
+  padding-top: 2em;
+  padding-bottom: 2em;
   background-color: bisque;
   box-sizing: border-box;
   height: 100vh;
   overflow: auto;
 }
 
+.TextArea__wrapper {
+  position: relative;
+  display: flex;
+}
+
 .TextArea {
   border: 1px dashed #dfdede;
   background-color: transparent;
   font-size: 14px;
+  resize: none;
+}
+
+.TextArea__resize-handler {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  cursor: nwse-resize;
+  transform: rotate(45deg);
+  width: 0;
+  height: 0;
+  border: 6px solid transparent;
+  border-left-color: brown;
 }
 
 .ElementControls {
