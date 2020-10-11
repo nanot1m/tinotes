@@ -125,7 +125,6 @@ export class NoteModel {
 export type SerializedNote = string & { __type__: "SerializedNote" };
 
 export function serializeNoteModel(note: NoteModel): SerializedNote {
-  console.log(toJS(note));
   return JSON.stringify({
     id: note.id,
     title: note.title,
